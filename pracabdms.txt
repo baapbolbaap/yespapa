@@ -1,0 +1,1067 @@
+system  --> oracle pass
+
+(IF Forgot password of Run SQL cmd: connect / as sysdba)
+
+(copy this from SQL sever and paste in SSMS)
+Server=localhost \SQLEXPRESS;Database=master;Trusted_Connection=True;
+
+
+
+
+
+###############################################################################################################
+Practical - 1 (A)(Demonstrate insert, update and delete operations on these tables. Execute queries on them.)
+###############################################################################################################
+
+connect
+system
+system
+
+(if didn't work - connect / as sysdba)
+
+CREATE TYPE type_name AS OBJECT ( Fname varchar(20), mname varchar(20), lname varchar(20) );
+
+
+CREATE TYPE type_address AS OBJECT ( Street varchar(20), City varchar(20), Pincode varchar(20) );
+
+
+CREATE TABLE Customer ( cid number(5) primary key, cname type_name, cAdd type_address, cphno number(10) );
+
+
+Insert into Customer values (1,type_name('Nachiket','S','Sarode'), type_address('Hulligan Valley','Nigeria','8617352'),7624301735);
+
+
+desc customer;
+
+select*from Customer ;
+
+Select c.cadd.street from Customer c WHERE cid=1;
+
+Select c.cname from Customer c;
+
+Select cid,cphno From customer ;
+
+Select c.cname.fname from Customer c;
+
+Select c.cname.fname | | ' ' | | c.cname.mname | | ' ' | |c.cname.lname from customer  c;
+
+
+--------------------PART-B -> Embedding Object, Nested Object----------------------
+
+create type addr_ty as object ( street varchar2(20), city varchar2(20), state char(2), zip varchar(9) );
+
+create type person_ty as object ( name varchar2(25), address addr_ty);
+
+CREATE TYPE student_Ty AS OBJECT (student_id varchar2(9), person person_ty);
+
+
+CREATE OR REPLACE type student_type as object ( rollno number(5), name varchar2(30) )
+
+Create table stu of student_type;
+
+insert into stu values(student_type(1,’Abhishek’));
+insert into stu values(student_type(3,’Yash’));
+insert into stu values(student_type(4,’Tejas’));
+insert into stu values(student_type(5,’Omkar’));
+
+select * from stu;
+
+select rollno from stu;
+
+select value(s) from stu s WHERE s.name='Abhishek';
+
+select value(s).rollno From stu s;
+
+
+
+################################ Practical-1(B)##################################################
+########## Aim:- Implementation of ORDBMS using ADT  ##########
+
+Description :- create object type name of the object is datatype1 with object attributes year and function,name of the function is prod(invest number) 
+##########################
+
+create type data_type1 as object(
+Year number,
+member function Prod(Invest number)
+return number);
+/
+
+************************************
+create type body data_type1 is
+member function Prod(Invest number)
+return number is
+begin
+return(Year+Invest);
+end;
+end;
+/
+**********************************
+
+create table Data(Col data_type1);
+
+insert into Data values(data_type1(2));
+
+select d.Col.Prod(12) from Data d;
+
+*****************************************
+
+create type Name as object(
+Fname varchar(10),
+LName varchar(10));
+/
+
+###############################################
+execute following queries:-
+(i) Create table person and person name.
+
+ create table Person(PName varchar2(20), Name varchar2(30));
+
+(ii) Insert the values (5 records).
+
+ insert into Person values (Name('Dhanesh','Tejas'));
+
+(iii) Display the first name.
+
+ select p.PName.FName from Person p;
+
+(iv) Display the full name of all people.
+
+ select p.PName.FName || ' ' || p.PName.LName from Person p;
+
+(v) Create object type address (street&city).
+
+create type address as object(
+street varchar(10),
+city varchar(10));
+/
+
+
+(vi) Create table people which will have names & addresses.
+
+create table People(
+Name Name,
+Addr address,
+dob date);
+
+
+insert into People values (Name('Omakr','Jadhav'), Address('90 feet', 'Mulund'), to_date('04-05-2004', 'dd-mm-yyyy'));
+
+
+(vii) Create an object demo (id & function getsquare).
+
+CREATE OR REPLACE TYPE demo AS OBJECT (
+    id NUMBER,
+
+    MEMBER FUNCTION getsquare RETURN NUMBER
+);
+/
+
+####  Provide function body #####
+CREATE OR REPLACE TYPE BODY demo AS
+
+    MEMBER FUNCTION getsquare RETURN NUMBER IS
+    BEGIN
+        RETURN id * id;
+    END;
+
+END;
+/
+
+####  Check object #####
+DESC demo;
+
+
+
+(viii) Create with the help of a demo object insert 5 values into the table.
+
+
+CREATE TABLE demo_table (
+    d demo
+);
+
+
+####  View the inserted data #####
+INSERT INTO demo_table VALUES (demo(1));
+INSERT INTO demo_table VALUES (demo(2));
+INSERT INTO demo_table VALUES (demo(3));
+INSERT INTO demo_table VALUES (demo(4));
+INSERT INTO demo_table VALUES (demo(5));
+
+
+####  View the inserted data #####
+SELECT t.d.id
+FROM demo_table t;
+
+
+#### to display the square also:#####
+SELECT t.d.id AS id,
+       t.d.getsquare() AS square
+FROM demo_table t;
+
+
+
+
+
+################################################################################
+Practical - 2 (SSMS)
+################################################################################
+Create an XML database and demonstrate insert, update and delete operations on these tables. Issue queries on it.
+
+
+In ssms copy the connection string
+paste in SSMS ---> goto connection properties -> Check the trust server certificate -> connect
+
+IN SSMS create a database dummy and write below query in it
+
+
+use dummy;
+
+create table T1(
+id int primary key identity(1,1),
+xmldata xml
+);
+
+select id,xmldata from T1 for xml auto,root('MyXmlOutput');
+
+
+insert into T1(xmldata) values ('<root><item id="1">value1</item></root>');
+insert into T1(xmldata) values (CAST('<anotherroot><product name="laptop" price="60000"/></anotherroot>'AS xml)) 
+
+insert into T1(xmldata) values ('<root><item id="2">value2</item></root>');
+insert into T1(xmldata) values (CAST('<anotherroot><product name="T.V" price="20000"/></anotherroot>' AS xml));
+
+
+insert into T1(xmldata) values ('<root><item id="3">value3</item></root>');
+insert into T1(xmldata) values (CAST('<anotherroot><product name="Mobile" price="68000"/></anotherroot>' AS xml));
+
+
+insert into T1(xmldata) values ('<root><item id="4">value4</item></root>');
+insert into T1(xmldata) values (CAST('<anotherroot><product name="A.C" price="28000"/></anotherroot>' AS xml));
+
+
+insert into T1(xmldata) values ('<root><item id="5">value5</item></root>');
+insert into T1(xmldata) values (CAST('<anotherroot><product name="Washing Machine" price="18000"/></anotherroot>' AS xml));
+
+select id,xmldata from T1 for xml auto,root('MyXmlOutput');
+
+go
+
+select * from T1;
+
+update T1 set xmldata.modify('replace value of(anotherroot/product/@name)[1] with "Mobile" ') where id = '3';
+
+select * from T1;
+
+update T1 set xmldata.modify('delete(/anotherroot/product)[1]');
+
+select id,xmldata from T1 for xml auto,root('MyXmlOutput');
+
+(also click on XML output link to see the xml code file of the output)
+
+
+
+
+################################################################################
+Practical - 3 (Vertical fragmention) (SSMS/SQLcmd)(SSMS Recommended)
+################################################################################
+
+In SSMS execute this
+
+create table student(
+roll_no varchar(10) primary key,
+name varchar(50),
+department varchar(50),
+additional_course varchar(50),
+fees_paid int);
+
+create table student1(
+roll_no varchar(10) primary key,
+name varchar(50),
+address varchar(50)
+);
+
+create table student2(
+roll_no varchar(10) primary key,
+department varchar(50),
+additonal_course varchar(50),
+fess_paid int);
+
+
+insert into student(roll_no,name,department,additional_course,fees_paid)values('82','john','Computer Science','AI',1200);
+insert into student(roll_no,name,department,additional_course,fees_paid)values('83','Alice','Mathematics','Statistics',1500);
+insert into student(roll_no,name,department,additional_course,fees_paid)values('84','bob','Physics','Quantum mechanics',900);
+
+insert into student1(roll_no ,name,address)values('82','john','123 MainSt');
+insert into student1(roll_no ,name,address)values('83','Alice','456 MapleAve');
+insert into student1(roll_no,name,address)values('84','bob','789 OakCr');
+
+insert into student2(roll_no,department,additonal_course,fess_paid)values('john','Computer Science','AI',1200);
+insert into student2(roll_no,department,additonal_course,fess_paid)values('Alice','Mathematics','Statistics',1500);
+insert into student2(roll_no,department,additonal_course,fess_paid)values('bob','Physics','Quantum mechanics',900);
+
+select * from student;
+select * from student1;
+select * from student2;
+
+--Q1) Display all records of the student table 
+select additional_course from student where roll_no='82';
+
+--Q2) Display additional course name for student  where roll is used 
+select additional_course from student where roll_no='82';
+
+--Q3) Display the fess paid for a given student name and fees paid for a given roll_nos
+select fees_paid from student where name ='john' or roll_no='82';
+
+--Q4) Display the name of all students whose fees paid is greater than 1000
+select name from student where fees_paid>1000;
+
+
+
+################################################################################
+Practical - 4 (Spatial d.b)  (Run SQL CMD)
+################################################################################
+
+--Q1) To Drop the table
+BEGIN
+   EXECUTE IMMEDIATE 'DROP TABLE Locations';
+EXCEPTION
+   WHEN OTHERS THEN
+      IF SQLCODE != -942 THEN
+         RAISE;
+      END IF;
+END;
+
+--Q2)Create table with spatial column
+CREATE TABLE Locations (
+    ID NUMBER PRIMARY KEY,
+    Name VARCHAR2(50),
+    GeoData SDO_GEOMETRY
+);
+
+--Q3) Register the spatial column
+INSERT INTO USER_SDO_GEOM_METADATA
+(TABLE_NAME, COLUMN_NAME, DIMINFO, SRID)
+VALUES (
+  'LOCATIONS',
+  'GEODATA',
+  SDO_DIM_ARRAY(
+      SDO_DIM_ELEMENT('X', 0, 100, 0.5),
+      SDO_DIM_ELEMENT('Y', 0, 100, 0.5)
+  ),
+  NULL
+);
+
+
+--Q4) Create spatial index
+CREATE INDEX loc_spatial_idx
+ON Locations(GeoData)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX;
+
+--Q5) Insert the spatial points
+INSERT INTO Locations VALUES
+(1, 'Park',
+  SDO_GEOMETRY(2001, NULL,
+      SDO_POINT_TYPE(10, 20, NULL), NULL, NULL)
+);
+
+INSERT INTO Locations VALUES
+(2, 'Hospital',
+  SDO_GEOMETRY(2001, NULL,
+      SDO_POINT_TYPE(15, 25, NULL), NULL, NULL)
+);
+
+INSERT INTO Locations VALUES
+(3, 'Library',
+  SDO_GEOMETRY(2001, NULL,
+      SDO_POINT_TYPE(30, 40, NULL), NULL, NULL)
+);
+
+
+--Q6) Query: Show all rows
+SELECT ID, Name, SDO_UTIL.TO_WKTGEOMETRY(GeoData) AS WKT
+FROM Locations;
+
+--Q7) Query: Find locations inside a polygon
+WITH poly AS (
+  SELECT SDO_GEOMETRY(
+    2003, NULL, NULL,
+    SDO_ELEM_INFO_ARRAY(1,1003,1),
+    SDO_ORDINATE_ARRAY(5,5, 35,5, 35,45, 5,45, 5,5)
+  ) AS g FROM dual
+)
+SELECT L.ID, L.Name
+FROM Locations L, poly P
+WHERE SDO_INSIDE(L.GeoData, P.g) = 'TRUE';
+
+
+--Q8) Query: Distance from a point
+SELECT ID, Name,
+       SDO_GEOM.SDO_DISTANCE(
+            GeoData,
+            SDO_GEOMETRY(2001, NULL, SDO_POINT_TYPE(12, 22, NULL), NULL, NULL),
+            0.5
+        ) AS DIST
+FROM Locations
+WHERE SDO_GEOM.SDO_DISTANCE(
+            GeoData,
+            SDO_GEOMETRY(2001, NULL, SDO_POINT_TYPE(12, 22, NULL), NULL, NULL),
+            0.5
+      ) < 15;
+
+
+
+
+
+################################################################################
+Practical - 5 (Temporal d.b) (SSMS)
+################################################################################
+
+CREATE TABLE EmployeeDepartment
+(
+EmpID INT PRIMARY KEY,
+EmpName VARCHAR(50),
+Department VARCHAR(50),
+
+ValidFrom DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,
+ValidTo DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL,
+PERIOD FOR SYSTEM_TIME (ValidFrom, ValidTo)
+)
+WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE =
+dbo.EmployeeDepartmentHistory));
+
+
+
+
+INSERT INTO EmployeeDepartment (EmpID, EmpName, Department) VALUES (1,'Aditya','HR'), (2, 'Shravan', 'IT'), (3, 'Gautam', 'Sales');
+
+
+UPDATE EmployeeDepartment SET Department = 'Finance' WHERE EmpID = 1;
+
+
+UPDATE EmployeeDepartment SET Department = 'Security' WHERE EmpID = 2;
+
+
+SELECT * FROM EmployeeDepartment;
+
+SELECT * FROM EmployeeDepartmentHistory;
+
+
+--Step 8) Current +history
+SELECT * FROM EmployeeDepartment FOR SYSTEM_TIME ALL;
+
+--Step 9) stop tracking the changes
+ALTER TABLE EmployeeDepartment SET (SYSTEM_VERSIONING = OFF);
+
+
+
+
+#############################################################################################
+Practical - 6 (MongoDB CRUD) (MongoDB)
+#############################################################################################
+
+Aim :- To demonstrate the accessing and storing  and performing CRUD operations in (description write the document based no sql from classroom)
+- MongoDB 
+- Redis
+
+Step 1:- Search for mongo db community server and click on the DOWNLOAD MongoDB community server.
+Step 2:- After click on the mongo db community server 
+Step 3:- Check for the various tools present in the page 
+Step 4:- Go to bottom of the page and download the Mongodb
+Step 5:- After clicking on the download 
+Step 6:- After successfully installing the MongoDB go to the file explorer 
+Step 7:- After that right click on it and install SSL IS Secure Socket Layer 
+Step 8:- Click on the next tick the checkbox and click on the next 
+Step 9:- Click on the Complete
+Step 10 :- Click on the complete option let the default settings be same don’t change it 
+Step 11:- Click on the next 
+Step 12:- click on the install 
+
+==================================================================================================================================Practical 6 (A) (SHELL) ==================================================================================================================================
+
+connect to database in MongoDB Compass -> Click on new connection  -> Save and connect  ->   
+
+Now click on the + sign create new database(adb) and add the collection (stud) and create database
+
+now on top right corner click on open mongo shell
+
+Execute the below commands
+
+db.stud.insertMany([
+    { stu_id: "1", stu_name: "Abhishek", stu_age: "21" },
+    { stu_id: "2", stu_name: "Tejas" },
+    { stu_id: "52", stu_name: "Pranav", stu_age: "21", stu_address: "Nahur" }
+])
+
+
+db.stud.find()
+
+db.stud.findOne({stu_name:'Abhishek'})
+
+db.stud.updateOne({stu_name:"Abhishek"},{$set:{marks:55}})
+
+db.stud.deleteOne({stu_name:"Tejas"})
+
+
+---------------------------------------------Part B: Product Collection ---------------------------------------------
+
+Now create a new collection
+
+db.createCollection("products")
+
+
+db.products.insertMany([
+    {
+        prod_name: "Laptop Pro X",
+        category: "Laptop",
+        price: 120000,
+        stock: 50,
+        manufacturer: { name: "TechCorp", country: "USA" }
+    },
+    {
+        prod_name: "Smartphone Z5",
+        category: "Smartphone",
+        price: 50000,
+        stock: 120,
+        manufacturer: { name: "MobileTech", country: "Japan" }
+    },
+    {
+        prod_name: "UltraHD TV",
+        category: "Television",
+        price: 85000,
+        stock: 30,
+        manufacturer: { name: "VisionX", country: "South Korea" }
+    }
+])
+
+
+
+db.products.find({category: "Smartphone"})
+
+db.products.deleteOne({prod_name:"Laptop Pro X"})
+
+
+---------------------------------------------Part C:- Importing an CSV file & json file into the MongoDB compass ---------------------------------------------
+
+now create a csv and json file and straight up import them in mongoDB
+
+csv file
+StudentID,Name,Age,Grade,Major
+101,Max,18,12,Computer Science
+102,Marley,17,11,Engineering
+103,Dwayne,19,13,Biology
+104,Dnyana,17,11,English
+105,Emily,18,12,Mathematics
+
+json file
+[
+  {
+    "StudentID": 101,
+    "Name": "Aarav Sharma",
+    "Age": 18,
+    "Grade": 12,
+    "Major": "Computer Science"
+  },
+  {
+    "StudentID": 102,
+    "Name": "Isha Patel",
+    "Age": 17,
+    "Grade": 11,
+    "Major": "Mechanical Engineering"
+  },
+  {
+    "StudentID": 103,
+    "Name": "Rohan Verma",
+    "Age": 19,
+    "Grade": 13,
+    "Major": "Biology"
+  }
+]
+
+
+
+
+===========================================================Practical 6 (B) (FORM) ===================================================================
+
+in new vs code folder
+
+-----------------------------------------------
+create html file 
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple MongoDB CRUD</title>
+</head>
+<body>
+
+    <h2>MongoDB CRUD Form</h2>
+
+    <form action="http://localhost:3000/user" method="POST">
+
+        <label>User ID:</label>
+        <input type="text" name="id"><br><br>
+
+        <label>Name:</label>
+        <input type="text" name="name"><br><br>
+
+        <label>Email:</label>
+        <input type="email" name="email"><br><br>
+
+        <button type="submit" name="action" value="create">Create</button>
+        <button type="submit" name="action" value="read">Read</button>
+        <button type="submit" name="action" value="update">Update</button>
+        <button type="submit" name="action" value="delete">Delete</button>
+
+    </form>
+
+</body>
+</html>
+
+--------------------------------------------
+app.js
+
+const express = require('express');
+const mongoose = require('mongoose');
+const path = require('path');
+
+
+const app = express();
+app.use(express.urlencoded({ extended: true }));
+
+
+// Connect MongoDB
+mongoose.connect("mongodb://127.0.0.1:27017/crudDB")
+    .then(() => console.log("MongoDB Connected"))
+    .catch(err => console.log(err));
+
+
+// Schema with custom ID
+const User = mongoose.model("User", new mongoose.Schema({
+    id: String,
+    name: String,
+    email: String
+}));
+
+
+// Serve HTML
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+});
+
+
+// CRUD Operations on custom ID
+app.post("/user", async (req, res) => {
+    const { action, id, name, email } = req.body;
+
+
+    try {
+        if (action === "create") {
+            await new User({ id, name, email }).save();
+            return res.send("User Created!");
+        }
+
+
+        if (action === "read") {
+            if (id) {
+                const user = await User.findOne({ id: id });
+                return res.send(user || "User Not Found");
+            }
+            return res.send(await User.find());
+        }
+
+
+        if (action === "update") {
+            if (!id) return res.send("User ID Required");
+            await User.findOneAndUpdate({ id: id }, { name, email });
+            return res.send("User Updated!");
+        }
+
+
+        if (action === "delete") {
+            if (!id) return res.send("User ID Required");
+            await User.findOneAndDelete({ id: id });
+            return res.send("User Deleted!");
+        }
+
+
+        return res.send("Invalid Action");
+
+
+    } catch (err) {
+        res.send(err.message);
+    }
+});
+
+
+// Start Server
+app.listen(3000, () =>
+    console.log("Server running at http://localhost:3000")
+);
+
+
+
+
+----run this in terminal----
+npm i express mongoose  
+node app.js
+
+now add, update, delete info 
+
+
+
+
+################################################################################
+Practical - 7  (MongoDB Atlas)
+################################################################################
+
+Open MongoAtlas on Chrome and create a new free cluster0 -> also click on python(it'll be node.js primarily) copy the connection string and give password create  -> goto database and network settings -> in network IP list -> delete the old one and create a new one 0.0.0.0/0 and save then run the code. 
+ IN the code add the password in the connection string
+
+
+Open IDLE and paste below code
+
+from pymongo import MongoClient
+
+# Connect to MongoDB in the cloud
+client = MongoClient("mongodb+srv://nachiketsarode_db_user:your_password_here@cluster0.m52fofl.mongodb.net/")
+db = client["shop"]
+orders = db["orders"]
+
+# CREATE – Add an order
+orders.insert_one({"order_id": 1, "customer": "Abhishek", "item": "Laptop","price": 120000}
+                  )
+orders.insert_one({"order_id": 2, "customer": "Dhanesh", "item": "Phone","price": 72000}
+                  )
+orders.insert_one({"order_id": 3, "customer": "Tejas", "item": "T.V","price": 12100}
+                  )
+orders.insert_one({"order_id": 4, "customer": "Mahesh", "item": "iphone","price": 60000}
+                  )
+# READ – Show all orders
+for order in orders.find():
+    print(order)
+    
+# UPDATE – Change price
+orders.update_one({"order_id": 3}, {"$set": {"price": 50000}})
+
+# DELETE – Remove an order
+orders.delete_one({"order_id": 4})
+
+
+
+after running this code check the data in cluster and click browse collections.
+
+
+
+
+################################################################################
+Practical - 8  (Indexing) (SSMS)
+################################################################################
+
+CREATE TABLE Employees (
+EmployeeID INT IDENTITY(1,1) PRIMARY KEY,
+FirstName NVARCHAR(50),
+LastName NVARCHAR(50),
+Department NVARCHAR(50),
+Salary INT,
+HireDate DATE
+);
+
+DECLARE @i INT = 1;
+WHILE @i <= 100000
+BEGIN
+INSERT INTO Employees (FirstName, LastName, Department, Salary, HireDate)
+VALUES (
+CONCAT('First', @i),
+CONCAT('Last', @i),
+CASE WHEN @i % 3 = 0 THEN 'HR'
+WHEN @i % 3 = 1 THEN 'IT'
+ELSE 'Finance' END,
+30000 + (RAND() * 20000),
+DATEADD(DAY, -@i, GETDATE())
+);
+SET @i += 1;
+END;
+
+SELECT *
+FROM Employees
+
+--Run a Query Without Index
+SET STATISTICS TIME ON;
+SET STATISTICS IO ON;
+
+
+SELECT *
+FROM Employees
+WHERE Department = 'IT';
+select* from Employees;
+
+-- Create a Non-Clustered Index
+create NONCLUSTERED INDEX IX_Employees_Department
+ON Employees (Department);
+
+
+select* from Employees
+where Department='IT' ;
+
+-- Create a Composite Index (Multiple Columns)
+SELECT *
+FROM Employees
+WHERE Department = 'Finance' AND Salary > 40000;
+
+--drop index
+DROP INDEX IX_Employees_Department ON Employees;
+
+
+-- View All Indexes in a Table
+EXEC sp_helpindex 'Employees';
+
+--Ctrl + M and execute and click on execution line and click on executon plan
+EXEC sp_helpindex 'Employees';
+
+
+
+
+################################################################################
+Practical - 9  (MongoDB)  (Indexing in MongoDB shell)
+################################################################################
+
+create a database and collection(employees)
+
+in the Mongoshell run the below code
+
+
+db.employees.insertMany([
+  { name: "Alice", department: "IT", salary: 50000, hireDate: new Date("2021-06-01") },
+  { name: "Bob", department: "Finance", salary: 60000, hireDate: new Date("2022-01-15") },
+  { name: "Charlie", department: "IT", salary: 55000, hireDate: new Date("2023-03-22") },
+  { name: "David", department: "HR", salary: 40000, hireDate: new Date("2020-11-30") },
+  { name: "Eva", department: "Finance", salary: 62000, hireDate: new Date("2022-08-10") }
+]);
+
+
+db.employees.find({ department: "IT" }).explain("executionStats");
+
+
+db.employees.createIndex({ department: 1 });
+db.employees.getIndexes();
+
+
+db.employees.find({ department: "IT" }).explain("executionStats");
+
+
+-- Create a Compound Index
+db.employees.createIndex({ department: 1, salary: -1 });
+db.employees.find({ department: "Finance", salary: { $gt: 50000 } }).explain("executionStats");
+
+
+--Create a Text Index
+db.employees.createIndex({ name: "text" });
+db.employees.find({ $text: { $search: "Alice" } });
+
+--Create a Unique Index
+db.employees.createIndex({ name: 1 }, { unique: true });
+
+
+-- Drop an Index
+db.employees.dropIndex("department_1");
+db.employees.dropIndexes();
+
+View Query Plan Visually --> in the indexes
+
+
+
+------Example 2: product catalog-------------
+create a collection productIndexDemoDB
+
+use productIndexDemoDB
+
+db.products.insertMany([
+    { name: "iPhone 15", category: "Smartphone", brand: "Apple", price: 1200, stock: 40 },
+    { name: "Galaxy S24", category: "Smartphone", brand: "Samsung", price: 1100, stock: 35 },
+    { name: "MacBook Pro", category: "Laptop", brand: "Apple", price: 2500, stock: 20 },
+    { name: "ThinkPad X1", category: "Laptop", brand: "Lenovo", price: 1800, stock: 25 },
+    { name: "Dell XPS 15", category: "Laptop", brand: "Dell", price: 2000, stock: 15 },
+    { name: "iPad Pro", category: "Tablet", brand: "Apple", price: 1300, stock: 50 },
+    { name: "Galaxy Tab S9", category: "Tablet", brand: "Samsung", price: 900, stock: 40 },
+    { name: "Apple Watch", category: "Wearable", brand: "Apple", price: 700, stock: 60 },
+    { name: "Fitbit Charge 6", category: "Wearable", brand: "Fitbit", price: 200, stock: 70 }
+]);
+
+
+--Run a Query Without Index
+db.products.find({ brand: "Apple" }).explain("executionStats");
+
+db.products.createIndex({ brand: 1 });
+db.products.getIndexes();
+
+db.products.find({ brand: "Apple" }).explain("executionStats");
+
+db.products.createIndex({ brand: 1, category: 1 });
+
+db.products.find({ brand: "Apple", category: "Laptop" }).explain("executionStats");
+
+db.products.createIndex({ name: "text" });
+db.products.find({ $text: { $search: "iPhone" } });
+
+
+db.products.createIndex({ name: 1 }, { unique: true });
+
+db.products.createIndex({ brand: "hashed" });
+
+db.products.dropIndex("brand_1");
+db.products.dropIndexes();
+
+
+--Without index:
+db.products.find({ category: "Laptop" }).explain("executionStats");
+
+
+--With index:
+db.products.createIndex({ category: 1 });
+db.products.find({ category: "Laptop" }).explain("executionStats");
+
+
+
+
+################################################################################
+Practical - 10 (MYSQL Client) (Indexing)  
+################################################################################
+
+-- ==========================
+-- LIST Partitioning (Department)
+DROP TABLE IF EXISTS Employee_List;
+
+CREATE TABLE Employee_List (
+    EmpID INT NOT NULL,
+    Name VARCHAR(50),
+    Department VARCHAR(20) NOT NULL,
+    Salary INT
+)
+PARTITION BY LIST COLUMNS(Department) (
+    PARTITION pHR VALUES IN ('HR'),
+    PARTITION pCR VALUES IN ('CR'),
+    PARTITION pJR VALUES IN ('JR'),
+    PARTITION pOthers VALUES IN ('SALES','IT')
+);
+
+-- Insert sample data
+INSERT INTO Employee_List VALUES
+(1,'Abhishek','HR',50000),
+(2,'Omkar','CR',60000),
+(3,'Dhanesh','JR',45000),
+(4,'Rohit','SALES',55000);
+
+-- Show data
+SELECT 'LIST Partitioning - Initial Data' AS Info;
+SELECT * FROM Employee_List;
+
+-- Update and Delete
+UPDATE Employee_List SET Salary=52000 WHERE EmpID=1;
+DELETE FROM Employee_List WHERE EmpID=4;
+
+-- Show data after CRUD
+SELECT 'LIST Partitioning - After Update/Delete' AS Info;
+SELECT * FROM Employee_List;
+
+-- ==========================
+-- RANGE Partitioning (Salary)
+DROP TABLE IF EXISTS Employee_Range;
+
+CREATE TABLE Employee_Range (
+    EmpID INT NOT NULL,
+    Name VARCHAR(50),
+    Department VARCHAR(20),
+    Salary INT NOT NULL
+)
+PARTITION BY RANGE (Salary) (
+    PARTITION pLow VALUES LESS THAN (50000),
+    PARTITION pMedium VALUES LESS THAN (100000),
+    PARTITION pHigh VALUES LESS THAN MAXVALUE
+);
+
+-- Insert sample data
+INSERT INTO Employee_Range VALUES
+(1,'Abhishek','HR',48000),
+(2,'Omkar','CR',75000),
+(3,'Dhanesh','JR',120000);
+
+-- Show data
+SELECT 'RANGE Partitioning - Initial Data' AS Info;
+SELECT * FROM Employee_Range;
+
+-- Update and Delete
+UPDATE Employee_Range SET Salary=80000 WHERE EmpID=2;
+DELETE FROM Employee_Range WHERE EmpID=3;
+
+-- Show data after CRUD
+SELECT 'RANGE Partitioning - After Update/Delete' AS Info;
+SELECT * FROM Employee_Range;
+
+-- ==========================
+-- HASH Partitioning (EmpID)
+DROP TABLE IF EXISTS Employee_Hash;
+
+CREATE TABLE Employee_Hash (
+    EmpID INT NOT NULL,
+    Name VARCHAR(50),
+    Department VARCHAR(20),
+    Salary INT
+)
+PARTITION BY HASH(EmpID) PARTITIONS 4;
+
+-- Insert sample data
+INSERT INTO Employee_Hash VALUES
+(1,'Abhishek','HR',50000),
+(2,'Omkar','CR',60000),
+(3,'Dhanesh','JR',45000),
+(4,'Rohit','SALES',55000);
+
+-- Show data
+SELECT 'HASH Partitioning - Initial Data' AS Info;
+SELECT * FROM Employee_Hash;
+
+-- Update and Delete
+UPDATE Employee_Hash SET Salary=52000 WHERE EmpID=1;
+DELETE FROM Employee_Hash WHERE EmpID=4;
+
+-- Show data after CRUD
+SELECT 'HASH Partitioning - After Update/Delete' AS Info;
+SELECT * FROM Employee_Hash;
+
+-- ==========================
+-- COMPOSITE Partitioning (RANGE + HASH on Salary)
+DROP TABLE IF EXISTS Employee_Composite;
+
+CREATE TABLE Employee_Composite (
+    EmpID INT NOT NULL,
+    Name VARCHAR(50),
+    Department VARCHAR(20),
+    Salary INT NOT NULL
+)
+PARTITION BY RANGE (Salary)
+SUBPARTITION BY HASH(EmpID)
+SUBPARTITIONS 2
+(
+    PARTITION pLow VALUES LESS THAN (50000),
+    PARTITION pMedium VALUES LESS THAN (100000),
+    PARTITION pHigh VALUES LESS THAN MAXVALUE
+);
+
+-- Insert sample data
+INSERT INTO Employee_Composite VALUES
+(1,'Abhishek','HR',48000),
+(2,'Omkar','CR',75000),
+(3,'Dhanesh','JR',120000),
+(4,'Rohit','SALES',52000);
+
+-- Show data
+SELECT 'COMPOSITE Partitioning - Initial Data' AS Info;
+SELECT * FROM Employee_Composite;
+
+-- Update and Delete
+UPDATE Employee_Composite SET Salary=80000 WHERE EmpID=2;
+DELETE FROM Employee_Composite WHERE EmpID=3;
+
+-- Show data after CRUD
+SELECT 'COMPOSITE Partitioning - After Update/Delete' AS Info;
+SELECT * FROM Employee_Composite;
