@@ -28,7 +28,7 @@ CREATE TYPE type_address AS OBJECT ( Street varchar(20), City varchar(20), Pinco
 CREATE TABLE Customer ( cid number(5) primary key, cname type_name, cAdd type_address, cphno number(10) );
 
 
-Insert into Customer values (1,type_name('Nachiket','S','Sarode'), type_address('Hulligan Valley','Nigeria','8617352'),7624301735);
+Insert into Customer values (1,type_name('delta','S','sins'), type_address('Hulligan Valley','Nigeria','8617352'),7624301735);
 
 
 desc customer;
@@ -59,16 +59,16 @@ CREATE OR REPLACE type student_type as object ( rollno number(5), name varchar2(
 
 Create table stu of student_type;
 
-insert into stu values(student_type(1,’Abhishek’));
-insert into stu values(student_type(3,’Yash’));
-insert into stu values(student_type(4,’Tejas’));
-insert into stu values(student_type(5,’Omkar’));
+insert into stu values(student_type(1,’alpha’));
+insert into stu values(student_type(3,’echo’));
+insert into stu values(student_type(4,’charlie’));
+insert into stu values(student_type(5,’bob’));
 
 select * from stu;
 
 select rollno from stu;
 
-select value(s) from stu s WHERE s.name='Abhishek';
+select value(s) from stu s WHERE s.name='alpha';
 
 select value(s).rollno From stu s;
 
@@ -118,7 +118,7 @@ execute following queries:-
 
 (ii) Insert the values (5 records).
 
- insert into Person values (Name('Dhanesh','Tejas'));
+ insert into Person values (Name('golf','charlie'));
 
 (iii) Display the first name.
 
@@ -144,7 +144,7 @@ Addr address,
 dob date);
 
 
-insert into People values (Name('Omakr','Jadhav'), Address('90 feet', 'Mulund'), to_date('04-05-2004', 'dd-mm-yyyy'));
+insert into People values (Name('bob','Gayle'), Address('90 feet', 'Mulund'), to_date('04-05-2004', 'dd-mm-yyyy'));
 
 
 (vii) Create an object demo (id & function getsquare).
@@ -487,19 +487,19 @@ now on top right corner click on open mongo shell
 Execute the below commands
 
 db.stud.insertMany([
-    { stu_id: "1", stu_name: "Abhishek", stu_age: "21" },
-    { stu_id: "2", stu_name: "Tejas" },
-    { stu_id: "52", stu_name: "Pranav", stu_age: "21", stu_address: "Nahur" }
+    { stu_id: "1", stu_name: "alpha", stu_age: "21" },
+    { stu_id: "2", stu_name: "charlie" },
+    { stu_id: "52", stu_name: "mike", stu_age: "21", stu_address: "texas" }
 ])
 
 
 db.stud.find()
 
-db.stud.findOne({stu_name:'Abhishek'})
+db.stud.findOne({stu_name:'alpha'})
 
-db.stud.updateOne({stu_name:"Abhishek"},{$set:{marks:55}})
+db.stud.updateOne({stu_name:"alpha"},{$set:{marks:55}})
 
-db.stud.deleteOne({stu_name:"Tejas"})
+db.stud.deleteOne({stu_name:"charlie"})
 
 
 ---------------------------------------------Part B: Product Collection ---------------------------------------------
@@ -723,18 +723,18 @@ Open IDLE and paste below code
 from pymongo import MongoClient
 
 # Connect to MongoDB in the cloud
-client = MongoClient("mongodb+srv://nachiketsarode_db_user:your_password_here@cluster0.m52fofl.mongodb.net/")
+client = MongoClient("mongodb+srv://name_db_user:your_password_here@cluster0.m52fofl.mongodb.net/")
 db = client["shop"]
 orders = db["orders"]
 
 # CREATE – Add an order
-orders.insert_one({"order_id": 1, "customer": "Abhishek", "item": "Laptop","price": 120000}
+orders.insert_one({"order_id": 1, "customer": "alpha", "item": "Laptop","price": 120000}
                   )
-orders.insert_one({"order_id": 2, "customer": "Dhanesh", "item": "Phone","price": 72000}
+orders.insert_one({"order_id": 2, "customer": "golf", "item": "Phone","price": 72000}
                   )
-orders.insert_one({"order_id": 3, "customer": "Tejas", "item": "T.V","price": 12100}
+orders.insert_one({"order_id": 3, "customer": "charlie", "item": "T.V","price": 12100}
                   )
-orders.insert_one({"order_id": 4, "customer": "Mahesh", "item": "iphone","price": 60000}
+orders.insert_one({"order_id": 4, "customer": "zulu", "item": "iphone","price": 60000}
                   )
 # READ – Show all orders
 for order in orders.find():
@@ -946,10 +946,10 @@ PARTITION BY LIST COLUMNS(Department) (
 
 -- Insert sample data
 INSERT INTO Employee_List VALUES
-(1,'Abhishek','HR',50000),
-(2,'Omkar','CR',60000),
-(3,'Dhanesh','JR',45000),
-(4,'Rohit','SALES',55000);
+(1,'alpha','HR',50000),
+(2,'bob','CR',60000),
+(3,'golf','JR',45000),
+(4,'romeo','SALES',55000);
 
 -- Show data
 SELECT 'LIST Partitioning - Initial Data' AS Info;
@@ -981,9 +981,9 @@ PARTITION BY RANGE (Salary) (
 
 -- Insert sample data
 INSERT INTO Employee_Range VALUES
-(1,'Abhishek','HR',48000),
-(2,'Omkar','CR',75000),
-(3,'Dhanesh','JR',120000);
+(1,'alpha','HR',48000),
+(2,'bob','CR',75000),
+(3,'golf','JR',120000);
 
 -- Show data
 SELECT 'RANGE Partitioning - Initial Data' AS Info;
@@ -1011,10 +1011,10 @@ PARTITION BY HASH(EmpID) PARTITIONS 4;
 
 -- Insert sample data
 INSERT INTO Employee_Hash VALUES
-(1,'Abhishek','HR',50000),
-(2,'Omkar','CR',60000),
-(3,'Dhanesh','JR',45000),
-(4,'Rohit','SALES',55000);
+(1,'alpha','HR',50000),
+(2,'bob','CR',60000),
+(3,'golf','JR',45000),
+(4,'romeo','SALES',55000);
 
 -- Show data
 SELECT 'HASH Partitioning - Initial Data' AS Info;
@@ -1049,10 +1049,10 @@ SUBPARTITIONS 2
 
 -- Insert sample data
 INSERT INTO Employee_Composite VALUES
-(1,'Abhishek','HR',48000),
-(2,'Omkar','CR',75000),
-(3,'Dhanesh','JR',120000),
-(4,'Rohit','SALES',52000);
+(1,'alpha','HR',48000),
+(2,'bob','CR',75000),
+(3,'golf','JR',120000),
+(4,'romeo','SALES',52000);
 
 -- Show data
 SELECT 'COMPOSITE Partitioning - Initial Data' AS Info;
