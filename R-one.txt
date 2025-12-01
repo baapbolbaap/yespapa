@@ -1,0 +1,1333 @@
+************************************************************
+Practical 2 - Conversion of NFAA to DFA
+*************************************************************
+
+from collections import deque
+
+states = ["q0", "q1", "q2"]
+alphabets = [0, 1]
+nfa_transition = {
+    "q0": {0: {"q0"}, 1: {"q1"}},
+    "q1": {0: {"q1"}, 1: {"q1", "q2"}},
+    "q2": {0: set(), 1: set()}
+}
+
+def epsilon_closure(state_set):
+    stack = list(state_set)
+    closure = set(state_set)
+    while stack:
+        s = stack.pop()
+        for t in nfa_transition.get(s, {}).get('ε', set()):
+            if t not in closure:
+                closure.add(t)
+                stack.append(t)
+    return closure
+
+def move(state_set, symbol):
+    result = set()
+    for s in state_set:
+        result |= nfa_transition.get(s, {}).get(symbol, set())
+    return result
+
+start = frozenset(epsilon_closure({"q0"}))
+dfa_trans = {}
+seen = {start}
+queue = deque([start])
+
+while queue:
+    current = queue.popleft()
+    for a in alphabets:
+        nxt = frozenset(epsilon_closure(move(current, a)))
+        dfa_trans[(current, a)] = nxt
+        if nxt and nxt not in seen:
+            seen.add(nxt)
+            queue.append(nxt)
+
+for (st, a), ns in dfa_trans.items():
+    print(f"{set(st)} --{a}--> {set(ns)}")
+
+
+
+**********************************************************
+Take from userr NFAA to DFAA :
+**********************************************************
+import pandas as pd
+
+nfa = {}                                
+n = int(input("No. of states : "))            
+t = int(input("No. of transitions : "))       
+for i in range(n):  
+    state = input("state name : ")            
+    nfa[state] = {}                           
+    for j in range(t):
+        path = input("path : ")               
+        print("Enter end state from state {} travelling through path {} : ".format(state,path))
+        reaching_state = [x for x in input().split()]
+        nfa[state][path] = reaching_state     
+
+print("\nNFA :- \n")
+print(nfa)
+print("\nPrinting NFA table :- ")
+nfa_table = pd.DataFrame(nfa)
+print(nfa_table.transpose())
+
+print("Enter final state of NFA : ")
+nfa_final_state = [x for x in input().split()]     
+   
+new_states_list = []                          
+dfa = {}                                      
+keys_list = list(list(nfa.keys())[0])                  
+path_list = list(nfa[keys_list[0]].keys())    
+
+dfa[keys_list[0]] = {}
+for y in range(t):
+    var = "".join(nfa[keys_list[0]][path_list[y]])
+    dfa[keys_list[0]][path_list[y]] = var
+    if var not in keys_list:
+        new_states_list.append(var)
+        keys_list.append(var)
+
+while len(new_states_list) != 0:
+    dfa[new_states_list[0]] = {}
+    for _ in range(len(new_states_list[0])):
+        for i in range(len(path_list)):
+            temp = []
+            for j in range(len(new_states_list[0])):
+                temp += nfa[new_states_list[0][j]][path_list[i]]
+            s = ""
+            s = s.join(temp)
+            if s not in keys_list:
+                new_states_list.append(s)
+                keys_list.append(s)
+            dfa[new_states_list[0]][path_list[i]] = s
+    new_states_list.remove(new_states_list[0])
+
+print("\nDFA :- \n")    
+print(dfa)
+print("\nPrinting DFA table :- ")
+dfa_table = pd.DataFrame(dfa)
+print(dfa_table.transpose())
+
+dfa_states_list = list(dfa.keys())
+dfa_final_states = []
+for x in dfa_states_list:
+    for i in x:
+        if i in nfa_final_state:
+            dfa_final_states.append(x)
+            break
+      
+print("\nFinal states of the DFA are : ",dfa_final_states)
+
+**********************************************************
+output - 
+**********************************************************
+state name : A
+path : a
+Enter end state from state A travelling through path a :
+B C
+path : b
+Enter end state from state A travelling through path b :
+A
+
+state name : B
+path : a
+Enter end state from state B travelling through path a :
+C
+path : b
+Enter end state from state B travelling through path b :
+A
+
+state name : C
+path : a
+Enter end state from state C travelling through path a :
+C
+path : b
+Enter end state from state C travelling through path b :
+B
+
+
+
+
+
+
+
+
+***********************************************************************************************************************************
+Practical 3 - lexicall analysiss to split your program into tokens
+*************************************************************************************************************************************
+
+import re
+KEYWORDS = {'if','else','while','do','for','return','int','float','char'}
+OPERATORS = {'+','-','*','/','=','==','!=','<','>','<=','>='}
+DELIMITERS = {';',',','(',')','[',']','{','}'}
+MAX_IDENTIFIER_LENGTH = 20
+
+def remove_comments(code):
+    code = re.sub(r'//.*','',code)
+    code = re.sub(r'/\*.*?\*/','',code,flags=re.DOTALL)
+    return code
+
+def tokenize(code):
+    code = remove_comments(code)
+    code = re.sub(r'[ \t]+', " ", code)
+    code = re.sub(r'\n+', '\n', code)
+
+    tokens = re.findall(r"[a-zA-Z_]\w*|\d+|==|!=|<=|>=|[{}();,=<>+\-*/]", code)
+
+    for token in tokens:
+        if token in KEYWORDS:
+            print(f"{token} -> Keyword")
+        elif token in OPERATORS:
+            print(f"{token} -> Operator")
+        elif token in DELIMITERS:
+            print(f"{token} -> Delimiter")
+        elif re.match(r'^\d+$', token):
+            print(f"{token} -> Number")
+        elif re.match(r"^[a-zA-Z_]\w*$", token):
+            if len(token) > MAX_IDENTIFIER_LENGTH:
+                print(f"{token} -> Error: Identifier too long")
+            else:
+                print(f"{token} -> Identifier")
+        else:
+            print(f"{token} -> Unknown")
+
+code_input = '''
+int main(){
+    // This is a comment
+    int number = 10;
+    float avergae = 12.5;
+    if (number > 5) {
+        number = number + 1;
+    }
+    /* Multi-line
+    comment */
+    return number;
+}
+'''
+tokenize(code_input)
+
+
+
+
+
+
+
+
+
+
+
+
+******************************************************************************************************************************************
+Practical 4- Identify whether a given line is a commentt or not
+******************************************************************************************************************************************
+
+
+import re
+def is_comment(code):
+    if code.startswith('//') or code.startswith('#'):
+        return True
+    elif code.startswith('/*') and code.endswith('*/'):
+        return True
+    else:
+        return False
+
+lines = ["// This is a single line comment",
+          "# this is a comment in python",
+          "/* this is multiline comment */",
+          "int x=0;//this is variable declaration",
+          "return 0;",
+          "/* comment with leading space",
+          "code line"]
+
+for line in lines:
+  if is_comment(line):
+    print(f"{line} -> Comment")
+  else:
+    print(f"{line} -> Not a comment")
+
+
+
+
+
+
+
+
+
+
+
+
+************************************************************************************************************************************
+Practical 5-Recognizee stringss under ‘a’,’a*b+’,’abb’
+*************************************************************************************************************************************
+
+import re
+def recognize_string(s):
+  if re.fullmatch(r'a',s):
+    return "'a' pattern matched"
+  elif re.fullmatch(r'a*b+',s):
+    return "'a*b+' pattern matched"
+  elif re.fullmatch(r'abb',s):
+    return "'abb' pattern matched"
+  else:
+    return "no pattern matched"
+
+test_strings=['a','b','abb','aab','aaab','abc','aaaaba','ababaa','aaa','bb']
+
+for s in test_strings :
+  result = recognize_string(s)
+  print(f"'{s}' -> {result}")
+
+
+
+
+
+
+
+
+
+
+
+
+*************************************************************************************************************************************************
+Practical 6 - symboll tablee to store and retrieve the variable information
+**************************************************************************************************************************************************
+
+
+class SymbolTable:
+    def __init__(self):
+        self.table = {}
+    def insert(self,name,attributes):
+        self.table[name] = attributes
+        print(f"Symbol '{name}' inserted/updated with attributes: {attributes}")
+    def lookup(self,name):
+        if name in self.table:
+            print(f"Symbol '{name}' found. Attributes: {self.table[name]}")
+            return self.table[name]
+        else:
+            print(f"Symbol '{name}' not found")
+            return None
+    def delete(self,name):
+        if name in self.table:
+            del self.table[name]
+            print(f"Symbol '{name}' deleted")
+            return True
+        else:
+            print(f"Symbol '{name}' not found")
+            return False
+    def display(self):
+        if not self.table:
+            print("Symbol table is empty")
+            return None
+        print("Symbol table contents")
+        for name, attributes in self.table.items():
+            print(f"Name '{name}'; Attributes: {attributes}")
+
+if __name__ == "__main__":
+    st = SymbolTable()
+    st.insert("x",{"type":"int", "scope":"global", "value":10})
+    st.insert("my_function",{"type":"function", "parameters":2, "return_type":"void"})
+    st.insert("y",{"type":"float", "scope":"local", "value":3.14})
+    st.display()
+    st.lookup("x")
+    st.lookup("non_exi_var")
+    st.delete("y")
+
+
+
+
+
+
+
+
+
+*******************************************************************************************************************************
+Practical 10- Infixx to postfix
+*******************************************************************************************************************************
+
+
+
+Q] Infix to Postfix 
+priority = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3}
+def infixToPostfix(expr):
+    stack, output = [], ''
+    for c in expr:
+        if c.isalnum():
+            output += c
+        elif c == '(':
+            stack.append(c)
+        elif c == ')':
+            while stack[-1] != '(':
+                output += stack.pop()
+            stack.pop()
+        else:
+            while stack and stack[-1] != '(' and priority[c] <= priority.get(stack[-1], 0):
+                output += stack.pop()
+            stack.append(c)
+    while stack:
+        output += stack.pop()
+    return output
+expression = input('Enter infix expression:')
+print('Infix notation:', expression)
+print('Postfix notation:', infixToPostfix(expression))
+
+
+output - (a-b)*c(d-e)
+
+
+
+*******************************************************************************************************************************
+Q] Postfixx to Infix 
+*******************************************************************************************************************************
+
+
+def postfixToInfix(expression):
+    stack = []
+
+    for ch in expression:
+        if ch.isalnum():
+            stack.append(ch)
+        else:
+            op2 = stack.pop()
+            op1 = stack.pop()
+            new_expr = "(" + op1 + ch + op2 + ")"
+            stack.append(new_expr)
+
+    return stack[-1]
+
+expression = input("Enter Postfix expression:").replace(" ", "")
+result = postfixToInfix(expression)
+print("Postfix Expression:", expression)
+print("Infix Expression:", result)
+
+Output: ab+cde+** 
+
+
+
+
+
+
+
+
+
+*******************************************************************************************************************************
+Practical 11- Operatorr Precedence
+*******************************************************************************************************************************
+
+
+operators = {'+', '-', '*', '/', '^', '(', ')'}
+priority = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3}
+
+def apply_op(op, a, b):
+    ops = {'+': a + b, '-': a - b, '*': a * b, '/': a / b, '^': a ** b}
+    return ops[op]
+
+def evaluate_step_by_step(expr):
+    values, ops, step = [], [], 1
+    expr = expr.replace(" ", "")
+    i = 0
+    
+    print(f"{'Step':<5}{'Read':<6}{'Operands':<20}{'Operators':<18}{'Action'}")
+    
+    while i < len(expr):
+        char = expr[i]
+        
+        if char.isdigit():
+            num = 0
+            while i < len(expr) and (expr[i].isdigit() or expr[i] == '.'):
+                if expr[i] == '.':
+                    decimal, i = 0.1, i + 1
+                    while i < len(expr) and expr[i].isdigit():
+                        num += int(expr[i]) * decimal
+                        decimal /= 10
+                        i += 1
+                    break
+                num = num * 10 + int(expr[i])
+                i += 1
+            values.append(num)
+            print(f"{step:<5}{char:<6}{str(values):<20}{str(ops):<18}Push {num}")
+            step += 1
+            continue
+        if char == '(':
+            ops.append(char)
+            print(f"{step:<5}{char:<6}{str(values):<20}{str(ops):<18}Push (")
+        elif char == ')':
+            while ops and ops[-1] != '(':
+                op, b, a = ops.pop(), values.pop(), values.pop()
+                result = apply_op(op, a, b)
+                values.append(result)
+                print(f"{step:<5}{char:<6}{str(values):<20}{str(ops):<18}{a}{op}{b}={result}")
+                step += 1
+            ops.pop()
+            print(f"{step:<5}{char:<6}{str(values):<20}{str(ops):<18}Pop (")
+        else:
+            while ops and ops[-1] != '(' and priority[char] <= priority.get(ops[-1], 0):
+                op, b, a = ops.pop(), values.pop(), values.pop()
+                result = apply_op(op, a, b)
+                values.append(result)
+                print(f"{step:<5}{char:<6}{str(values):<20}{str(ops):<18}{a}{op}{b}={result}")
+                step += 1
+            ops.append(char)
+            print(f"{step:<5}{char:<6}{str(values):<20}{str(ops):<18}Push {char}")
+        
+        step += 1
+        i += 1
+    
+    while ops:
+        op, b, a = ops.pop(), values.pop(), values.pop()
+        result = apply_op(op, a, b)
+        values.append(result)
+        print(f"{step:<5}{'End':<6}{str(values):<20}{str(ops):<18}{a}{op}{b}={result}")
+        step += 1
+    
+    print(f"\nFinal Result: {values[0]}")
+    return values[0]
+
+expr = input("Enter arithmetic expression: ")
+evaluate_step_by_step(expr)
+
+Output: 2+3*4-56
+
+
+
+
+
+
+
+
+
+
+
+*******************************************************************************************************************************
+Practical 12 -Syntaxx tree
+*******************************************************************************************************************************
+
+python -m pip install --upgrade pip
+python -m pip install numpy
+
+python -m pip install matplotlib 
+python -m pip install networkx
+
+*********************************************************************
+
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
+operators = {'+', '-', '*', '/', '(', ')', '^'}
+priority = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3}
+
+class Node:
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+
+def infix_to_postfix(expr):
+    stack, output = [], ''
+    for c in expr:
+        if c not in operators:
+            output += c
+        elif c == '(':
+            stack.append(c)
+        elif c == ')':
+            while stack[-1] != '(':
+                output += stack.pop()
+            stack.pop()
+        else:
+            while stack and stack[-1] != '(' and priority[c] <= priority.get(stack[-1], 0):
+                output += stack.pop()
+            stack.append(c)
+    return output + ''.join(reversed(stack))
+
+def build_tree(postfix):
+    stack = []
+    for c in postfix:
+        node = Node(c)
+        if c in operators:
+            node.right, node.left = stack.pop(), stack.pop()
+        stack.append(node)
+    return stack[0]
+
+def draw_tree(root):
+    G = nx.DiGraph()
+    
+    def add_edges(node, x=0, y=0, layer=1):
+        if node:
+            G.add_node(id(node), label=node.value, pos=(x, y))
+            if node.left:
+                G.add_edge(id(node), id(node.left))
+                add_edges(node.left, x - 1/(2**layer), y - 1, layer + 1)
+            if node.right:
+                G.add_edge(id(node), id(node.right))
+                add_edges(node.right, x + 1/(2**layer), y - 1, layer + 1)
+    
+    add_edges(root)
+    pos = nx.get_node_attributes(G, 'pos')
+    labels = nx.get_node_attributes(G, 'label')
+    nx.draw(G, pos, labels=labels, with_labels=True, node_size=2000,
+            node_color="skyblue", font_size=12, font_weight="bold", arrows=False)
+    plt.show()
+
+expr = input("Enter infix expression: ")
+postfix = infix_to_postfix(expr)
+print(f"Infix: {expr}\nPostfix: {postfix}")
+draw_tree(build_tree(postfix))
+
+Output:a+b*(c^d-e)^(f+g*h)-i
+
+
+
+
+
+
+
+
+
+
+*******************************************************************************************************************************
+Practical 13- DAGG
+*******************************************************************************************************************************
+
+
+import networkx as nx
+import matplotlib.pyplot as plt
+
+
+g = nx.DiGraph()
+g.add_nodes_from(['A','B','C','D','+','-','*'])
+g.add_edges_from([('A','+'),('B','+'),('C','-'),('D','-'),('+','*'),('-','*')])
+
+
+plt.figure()
+pos = nx.spring_layout(g)
+
+
+nx.draw(g, pos, with_labels=True)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*******************************************************************************************************************************
+Practical 14- 3 addresss code
+*******************************************************************************************************************************
+
+def prec(op):
+    return 1 if op in "+-" else 2 if op in "*/" else 0
+
+def infix_to_postfix(expr):
+    stack, output = [], []
+    for ch in expr:
+        if ch.isalnum():
+            output.append(ch)
+        elif ch == '(':
+            stack.append(ch)
+        elif ch == ')':
+            while stack and stack[-1] != '(':
+                output.append(stack.pop())
+            stack.pop()
+        else:
+            while stack and prec(stack[-1]) >= prec(ch):
+                output.append(stack.pop())
+            stack.append(ch)
+    while stack:
+        output.append(stack.pop())
+    return ''.join(output)
+
+def generate_TAC(postfix):
+    stack, tac, t = [], [], 1
+    for ch in postfix:
+        if ch.isalnum():
+            stack.append(ch)
+        else:
+            b, a = stack.pop(), stack.pop()
+            r = f"t{t}"
+            tac.append((ch, a, b, r))
+            stack.append(r)
+            t += 1
+    return tac
+
+def display_quadruples(tac):
+    print("\n=== QUADRUPLES ===")
+    for item in tac:
+        print(item)
+
+def display_triples(tac):
+    print("\n=== TRIPLES ===")
+    triples = []
+    for op, a, b, r in tac:
+        a = f"({a[1]})" if a.startswith("t") else a
+        b = f"({b[1]})" if b.startswith("t") else b
+        triples.append((op, a, b))
+        print((op, a, b))
+    return triples
+
+def display_indirect(triples):
+    print("\n=== INDIRECT TRIPLES ===")
+    print("\nInstruction Table:")
+    for i, row in enumerate(triples):
+        print(i, row)
+    print("\nPointer Table:")
+    for i in range(len(triples)):
+        print(i, "->", i)
+
+if __name__ == "__main__":
+    expr = input("Enter expression: ")
+    postfix = infix_to_postfix(expr)
+    tac = generate_TAC(postfix)
+    print("\nPostfix:", postfix)
+    display_quadruples(tac)
+    triples = display_triples(tac)
+    display_indirect(triples)
+
+Output:a/b+c*d
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**********************************************************
+**********************************************************
+**********************************************************
+**********************************************************
+
+Not gonna come
+**********************************************************
+**********************************************************
+**********************************************************
+
+
+Practical 1
+Convert your right linear grammar to left linear grammar
+def main():
+    terminals = set()
+    non_terminals = set()
+    right_linear_grammar = []
+    print("Enter the right linear grammar, separated by '-' ; e.g., S-aB")
+    print("Enter 'q' to Quit\n")
+
+    # Input rules
+    while True:
+        rule = input().strip()
+        if rule == "q":
+            break
+        right_linear_grammar.append(rule)
+    print("\nThe Right Linear Grammar is:")
+    for rule in right_linear_grammar:
+        print(rule)
+
+    # Extract terminals
+    print("\nTerminals are:")
+    for rule in right_linear_grammar:
+        right_side = rule.split("-")[1]
+        for char in right_side:
+            if char.islower():
+                terminals.add(char)
+    print(" ".join(terminals))
+
+    # Extract non-terminals
+    print("\nNon-terminals are:")
+    for rule in right_linear_grammar:
+        left_side = rule.split("-")[0]
+        right_side = rule.split("-")[1]
+        non_terminals.add(left_side)
+        for char in right_side:
+            if char.isupper():
+                non_terminals.add(char)
+    print(" ".join(non_terminals))
+
+    # Convert to left linear grammar
+    print("\nThe Left Linear Grammar is:")
+    for rule in right_linear_grammar:
+        left_side = rule.split("-")[0]
+        right_side = rule.split("-")[1]
+
+        # Case: A → aB  (ends with non-terminal)
+        if right_side[-1].isupper():
+            new_left = right_side[-1]
+            new_right = right_side[:-1] + left_side
+            print(f"{new_left} - {new_right}")
+
+        # Case: A → a  (ends with terminal)
+        else:
+            print(f"Z - {right_side + left_side}")
+
+if __name__ == "__main__":
+    main()
+
+Output:
+
+
+
+Practical 7
+Write a program to calculate the first and follow sets for a context free grammar
+from collections import defaultdict
+
+def compute_first(grammar):
+    first = defaultdict(set)
+    changed = True
+
+    # Initialization of the First sets
+    for non_terminal, productions in grammar.items():
+        for production in productions:
+            if not production:  # Rule: X -> ε
+                first[non_terminal].add('ε')
+            elif not production[0].isupper():  # Rule: X -> a (terminal)
+                first[non_terminal].add(production[0])
+
+    while changed:
+        changed = False
+        for non_terminal, productions in grammar.items():
+            for production in productions:
+                current_first_size = len(first[non_terminal])
+
+                # Rule 2: If production starts with a non-terminal, propagate its First set
+                if production and production[0].isupper():  # If it starts with a non-terminal
+                    can_derive_epsilon = True
+                    for symbol in production:
+                        if symbol in grammar:  # Non-terminal
+                            first[non_terminal].update(first[symbol] - {'ε'})
+                            if 'ε' not in first[symbol]:  # Stop if we can't derive ε
+                                can_derive_epsilon = False
+                                break
+                        else:  # Terminal
+                            first[non_terminal].add(symbol)
+                            can_derive_epsilon = False
+                            break
+
+                    # If we can derive ε, add ε to the First set of the non-terminal
+                    if can_derive_epsilon and production:
+                        first[non_terminal].add('ε')
+
+                # Rule 1: If production starts with a terminal, add the terminal to First(X)
+                elif production and not production[0].isupper():  # If it starts with a terminal
+                    first[non_terminal].add(production[0])
+
+                # Check if First set changed
+                if len(first[non_terminal]) != current_first_size:
+                    changed = True
+    return first
+
+def compute_follow(grammar, first_sets, start_symbol):
+    follow = defaultdict(set)
+    follow[start_symbol].add('$')  # Start symbol always gets the end-of-input marker
+    changed = True
+
+    while changed:
+        changed = False
+        for non_terminal, productions in grammar.items():
+            for production in productions:
+                trailer = follow[non_terminal].copy()  # Copy of the FOLLOW set of the current non-terminal
+
+                # Traverse the production from right to left
+                for symbol in reversed(production):
+                    if symbol.isupper():  # It's a non-terminal
+                        current_follow_size = len(follow[symbol])
+
+                        # Rule 1: If there is a symbol to the right, add FIRST of that symbol (except ε)
+                        if not symbol == production[-1]:  # There's something to the right of this non-terminal
+                            next_symbol = production[production.index(symbol) + 1]
+                            if next_symbol.isupper():
+                                follow[symbol].update(first_sets[next_symbol] - {'ε'})
+                            else:  # It's a terminal
+                                follow[symbol].add(next_symbol)
+
+                        # Rule 2: If ε is in FIRST of the next symbol or it's the last symbol, propagate FOLLOW(X)
+                        if 'ε' in first_sets.get(symbol, set()) or symbol == production[-1]:
+                            follow[symbol].update(trailer)
+
+                        if len(follow[symbol]) != current_follow_size:
+                            changed = True
+    return follow
+
+# Example grammar
+if __name__ == "__main__":
+    grammar = {
+        'E': ['TE\''],
+        'E\'': ['+TE\'', 'ε'],
+        'T': ['FT\''],
+        'T\'': ['*FT\'', 'ε'],
+        'F': ['(E)', 'id']
+    }
+    start_symbol = 'E'
+
+    # Compute FIRST sets
+    first_sets = compute_first(grammar)
+    # Compute FOLLOW sets
+    follow_sets = compute_follow(grammar, first_sets, start_symbol)
+
+    # Print the results
+    print("First Sets:")
+    for nt, s in first_sets.items():
+        print(f"FIRST({nt}) = {s}")
+
+    print("\nFollow Sets:")
+    for nt, s in follow_sets.items():
+        print(f"FOLLOW({nt}) = {s}")
+
+Output:
+
+
+Practical 8
+LL(1)
+class Production:
+    def __init__(self, head, body):
+        self.head = head
+        self.body = body
+    def __repr__(self):
+        return f"{self.head} -> {' '.join(self.body)}"
+
+class LL1Parser:
+    def __init__(self, grammar, start_symbol):
+        self.grammar = grammar
+        self.start_symbol = start_symbol
+        self.non_terminals = set(prod.head for prod in grammar)
+        self.terminals = self.get_terminals()
+        self.first = self.compute_first_sets()
+        self.follow = self.compute_follow_sets()
+        self.parse_table = self.build_parse_table()
+
+    def get_terminals(self):
+        terminals = set()
+        for prod in self.grammar:
+            for symbol in prod.body:
+                if symbol not in self.non_terminals and symbol != 'epsilon':
+                    terminals.add(symbol)
+        terminals.add('$')
+        return terminals
+
+    def compute_first_sets(self):
+        first = {nt: set() for nt in self.non_terminals}
+        first['epsilon'] = {'epsilon'}
+
+        changed = True
+        while changed:
+            changed = False
+            for prod in self.grammar:
+                head = prod.head
+                body = prod.body
+                for symbol in body:
+                    if symbol in self.terminals:
+                        if symbol not in first[head]:
+                            first[head].add(symbol)
+                            changed = True
+                        break
+                    else:
+                        before = len(first[head])
+                        first[head].update(first[symbol] - {'epsilon'})
+                        after = len(first[head])
+                        if 'epsilon' not in first[symbol]:
+                            break
+                        if after > before:
+                            changed = True
+                else:
+                    # All symbols in body have epsilon
+                    if 'epsilon' not in first[head]:
+                        first[head].add('epsilon')
+                        changed = True
+        return first
+
+    def compute_follow_sets(self):
+        follow = {nt: set() for nt in self.non_terminals}
+        follow[self.start_symbol].add('$')
+
+        changed = True
+        while changed:
+            changed = False
+            for prod in self.grammar:
+                head = prod.head
+                body = prod.body
+                for i, B in enumerate(body):
+                    if B in self.non_terminals:
+                        beta = body[i+1:]
+                        first_beta = self.first_of_string(beta)
+                        before = len(follow[B])
+                        follow[B].update(first_beta - {'epsilon'})
+                        if 'epsilon' in first_beta or not beta:
+                            follow[B].update(follow[head])
+                        after = len(follow[B])
+                        if after > before:
+                            changed = True
+        return follow
+
+    def first_of_string(self, symbols):
+        result = set()
+        for symbol in symbols:
+            if symbol in self.terminals:
+                result.add(symbol)
+                break
+            else:
+                result.update(self.first[symbol] - {'epsilon'})
+                if 'epsilon' not in self.first[symbol]:
+                    break
+        else:
+            result.add('epsilon')
+        return result
+
+    def build_parse_table(self):
+        table = {}
+        for prod in self.grammar:
+            head = prod.head
+            body = prod.body
+            first_body = self.first_of_string(body)
+            for terminal in first_body - {'epsilon'}:
+                table[(head, terminal)] = prod
+            if 'epsilon' in first_body:
+                for terminal in self.follow[head]:
+                    table[(head, terminal)] = prod
+        return table
+
+    def parse(self, input_str):
+        input_buffer = list(input_str) + ['$']
+        stack = ['$']
+        stack.append(self.start_symbol)
+        print(f"{'Stack':<20} {'Input':<20} Action")
+        while stack:
+            top = stack[-1]
+            current_input = input_buffer[0]
+            stack_content = ''.join(stack[::-1])
+            input_content = ''.join(input_buffer)
+
+            if top == current_input == '$':
+                print(f"{stack_content:<20} {input_content:<20} Accept")
+                return True
+
+            if top == current_input:
+                stack.pop()
+                input_buffer.pop(0)
+                print(f"{stack_content:<20} {input_content:<20} Match '{top}'")
+            elif top in self.non_terminals:
+                production = self.parse_table.get((top, current_input))
+                if production is None:
+                    print(f"{stack_content:<20} {input_content:<20} Error: no rule for ({top}, {current_input})")
+                    return False
+                stack.pop()
+                if production.body != ['epsilon']:
+                    for sym in reversed(production.body):
+                        stack.append(sym)
+                print(f"{stack_content:<20} {input_content:<20} Output {production}")
+            else:
+                print(f"{stack_content:<20} {input_content:<20} Error: Unexpected symbol {top}")
+                return False
+        return False
+
+if __name__ == "__main__":
+    grammar = [
+        Production('E', ['T', 'Ep']),
+        Production('Ep', ['+', 'T', 'Ep']),
+        Production('Ep', ['epsilon']),
+        Production('T', ['F', 'Tp']),
+        Production('Tp', ['*', 'F', 'Tp']),
+        Production('Tp', ['epsilon']),
+        Production('F', ['(', 'E', ')']),
+        Production('F', ['id'])
+    ]
+
+    parser = LL1Parser(grammar, 'E')
+    print("FIRST sets:")
+    for nt in sorted(parser.first):
+        print(f"{nt}: {parser.first[nt]}")
+    print("\nFOLLOW sets:")
+    for nt in sorted(parser.follow):
+        print(f"{nt}: {parser.follow[nt]}")
+
+    print("\nParsing 'id+id*id':")
+    parser.parse("id+id*id")
+    print("\nParsing '(id+id)*id':")
+    parser.parse("(id+id)*id")
+
+Output:
+
+
+Practical 9
+LR(0)
+class Production:
+    def __init__(self, head, body):
+        self.head = head
+        self.body = body
+
+# Represents an LR(0) item
+class Item:
+    def __init__(self, production, dot_position):
+        self.production = production
+        self.dot_position = dot_position
+    def __eq__(self, other):
+        return (self.production.head==other.production.head and
+                self.production.body==other.production.body and
+                self.dot_position == other.dot_position)
+    def __hash__(self):
+        return hash((self.production.head, tuple(self.production.body), self.dot_position))
+
+# LR(0) Parser Class
+class LR0Parser:
+    def __init__(self, grammar):
+        self.grammar = grammar
+        self.augmented_grammar = self.augment_grammar()
+        self.terminals = self.get_terminals()
+        self.non_terminals = self.get_non_terminals()
+        self.states = []
+        self.action_table = {}
+        self.goto_table = {}
+        self.production_map = self.create_production_map()
+
+
+    def augment_grammar(self):
+        start_symbol = self.grammar[0].head
+        augmented_production = Production("S'", [start_symbol])
+        return [augmented_production] + self.grammar
+
+    def get_terminals(self):
+        terminals = set()
+        for prod in self.grammar:
+            for symbol in prod.body:
+                if not symbol.isupper() and symbol not in ["ϵ", "$"]:
+                    terminals.add(symbol)
+        terminals.add('$')
+        return sorted(list(terminals))
+
+    def get_non_terminals(self):
+        non_terminals = set()
+        for prod in self.grammar:
+            non_terminals.add(prod.head)
+        return sorted(list(non_terminals))
+
+    def create_production_map(self):
+        return {f"R{i}": prod for i, prod in enumerate(self.grammar)}
+
+    def closure(self, item_set):
+        closure_set = set(item_set)
+        while True:
+            new_items_added = False
+            items_to_add = set()
+            for item in closure_set:
+                if item.dot_position < len(item.production.body):
+                    symbol_after_dot = item.production.body[item.dot_position]
+                    if symbol_after_dot in self.non_terminals:
+                        for prod in self.augmented_grammar:
+                            if prod.head == symbol_after_dot:
+                                new_item = Item(prod, 0)
+                                if new_item not in closure_set and new_item not in items_to_add:
+                                    items_to_add.add(new_item)
+                                    new_items_added = True
+            if not new_items_added:
+                break
+            closure_set.update(items_to_add)
+        return frozenset(closure_set)
+
+    def goto(self, item_set, symbol):
+        next_item_set = set()
+        for item in item_set:
+            if item.dot_position < len(item.production.body):
+                if item.production.body[item.dot_position] == symbol:
+                    new_item = Item(item.production, item.dot_position + 1)
+                    next_item_set.add(new_item)
+        return self.closure(next_item_set)
+
+    def build_parsing_table(self):
+        # Initial state
+        initial_item = Item(self.augmented_grammar[0], 0)
+        initial_state = self.closure({initial_item})
+        self.states.append(initial_state)
+
+        queue = [initial_state]
+        state_map = {initial_state: 0}
+        while queue:
+            current_state = queue.pop(0)
+            current_state_idx = state_map[current_state]
+
+            # Process shifts and gotos
+            all_symbols = self.terminals[:-1] + self.non_terminals
+            for symbol in all_symbols:
+                next_state = self.goto(current_state, symbol)
+                if next_state:
+                    if next_state not in state_map:
+                        state_map[next_state] = len(self.states)
+                        self.states.append(next_state)
+                        queue.append(next_state)
+
+                    next_state_idx = state_map[next_state]
+                    if symbol in self.terminals:
+                        # Shift action
+                        self.action_table[(current_state_idx, symbol)] = f"S{next_state_idx}"
+                    else:
+                        # Goto action
+                        self.goto_table[(current_state_idx, symbol)] = next_state_idx
+
+            # Process reductions
+            for item in current_state:
+                if item.dot_position == len(item.production.body):
+                    if item.production.head == "S'":
+                        # Accept action
+                        self.action_table[(current_state_idx, '$')] = "accept"
+                    else:
+                        # Reduce action for all terminals
+                        prod_idx = self.augmented_grammar.index(item.production) - 1
+                        for terminal in self.terminals:
+                            if (current_state_idx, terminal) in self.action_table:
+                                # Conflict detected (Shift/Reduce)
+                                print(f"Warning: Shift/Reduce conflict in state {current_state_idx} on terminal '{terminal}'")
+                                # This simple parser just warns and keeps the shift action.
+                            elif (current_state_idx, terminal) in self.action_table and self.action_table[(current_state_idx, terminal)].startswith('R'):
+                                # Conflict detected (Reduce/Reduce)
+                                print(f"Warning: Reduce/Reduce conflict in state {current_state_idx} on terminal '{terminal}'")
+                                # This simple parser just warns.
+                            else:
+                                self.action_table[(current_state_idx, terminal)] = f"R{prod_idx + 1}"
+    def parse(self, input_string):
+        stack = [0]
+        input_string = list(input_string) + ['$']
+        print("\nParsing Table:")
+        self.print_parsing_table()
+        print("\nParsing Input:", "".join(input_string))
+        print("Stack\t\t\tInput\t\tAction")
+        while True:
+            current_state = stack[-1]
+            next_input = input_string[0]
+            action = self.action_table.get((current_state, next_input))
+
+
+            print(f"{stack}\t\t\t{input_string}\t\t{action}")
+            if action is None:
+                print("Error: No valid action found.")
+                return False
+            elif action.startswith('S'):
+                # Shift
+                new_state = int(action[1:])
+                stack.append(next_input)
+                stack.append(new_state)
+                input_string.pop(0)
+            elif action.startswith('R'):
+                # Reduce
+                prod_idx = int(action[1:])
+                prod_to_reduce = self.grammar[prod_idx - 1]
+
+                # Pop symbols from stack
+                for _ in range(len(prod_to_reduce.body) * 2):
+                    stack.pop()
+
+                new_non_terminal = prod_to_reduce.head
+                current_state_after_pop = stack[-1]
+
+                # Push non-terminal and new state
+                goto_state = self.goto_table.get((current_state_after_pop, new_non_terminal))
+                if goto_state is None:
+                    print("Error: Invalid GOTO transition during reduction.")
+                    return False
+
+                stack.append(new_non_terminal)
+                stack.append(goto_state)
+            elif action == "accept":
+                print("Accept: Input string successfully parsed.")
+                return True
+            else:
+                print("Error: Unknown action.")
+                return False
+
+    def print_parsing_table(self):
+        terminals_header = self.terminals
+        non_terminals_header = self.non_terminals
+        header = ["State"] + terminals_header + non_terminals_header
+
+        print("\t".join(header))
+        print("-" * (8 * len(header)))
+
+        for i in range(len(self.states)):
+            row = [str(i)]
+            for terminal in terminals_header:
+                row.append(self.action_table.get((i, terminal), ""))
+            for non_terminal in non_terminals_header:
+                row.append(self.goto_table.get((i, non_terminal), ""))
+            print("\t".join(map(str, row)))
+
+# Main execution
+if __name__ == "__main__":
+    grammar_rules = [
+        Production('E', ['E', '+', 'T']),
+        Production('E', ['T']),
+        Production('T', ['T', '*', 'F']),
+        Production('T', ['F']),
+        Production('F', ['(', 'E', ')']),
+        Production('F', ['id'])
+    ]
+
+
+    parser = LR0Parser(grammar_rules)
+    parser.build_parsing_table()
+
+
+    input_string_to_parse = "id+id*id"
+    parser.parse(input_string_to_parse)
+
+
+    print("\n--- Another Test ---")
+    input_string_to_parse = "(id+id)*id"
+    parser.parse(input_string_to_parse)
+
+Output:
+
+
+
+
+
+
+Practical 15
+YACC
+#@title Writing
+%%writefile program.y
+
+%{
+    #include<stdio.h>
+    #include<stdlib.h>
+%}
+%token DIGIT LETTER UND NL
+%%
+stmt: variable NL {printf("Valid Identitfier\n");exit(0);}
+variable: LETTER alphanumeric
+alphanumeric: LETTER alphanumeric
+            | DIGIT alphanumeric
+            | UND alphanumeric
+            | LETTER
+            | DIGIT
+            | UND;
+%%
+
+int yyerror(){
+    printf("Invalid Identifier\n");
+    exit(0);
+}
+
+void main(){
+    printf("Enter the variable name:");
+    yyparse();
+}
+
+Output:
+
+
